@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Art Theory Drill</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f4f0; color: #1a1a18;
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; padding: 2rem 1rem;
+  }
+  .app { width: 100%; max-width: 640px; }
+  h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #888; margin-bottom: 1.5rem; }
+  .module-tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .tab { padding: 7px 16px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px; cursor: pointer; background: #fff; color: #555; transition: all .15s; }
+  .tab.active { background: #1a1a18; color: #fff; border-color: #1a1a18; }
+  .tab:hover:not(.active) { border-color: #999; color: #222; }
+  .progress-section { margin-bottom: 1.5rem; }
+  .tier-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .tier-badge { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 6px; white-space: nowrap; }
+  .t1 { background: #e6f1fb; color: #0c447c; }
+  .t2 { background: #eaf3de; color: #27500a; }
+  .t3 { background: #faeeda; color: #633806; }
+  .t4 { background: #fbeaf0; color: #72243e; }
+  .xp-wrap { flex: 1; height: 5px; background: #e0dfd8; border-radius: 4px; overflow: hidden; }
+  .xp-fill { height: 100%; background: #1a1a18; border-radius: 4px; transition: width .5s; }
+  .xp-label { font-size: 12px; color: #888; min-width: 56px; text-align: right; }
+  .stats-row { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+  .stat { flex: 1; background: #fff; border: 1px solid #e8e7e2; border-radius: 10px; padding: 12px; text-align: center; }
+  .stat-n { font-size: 22px; font-weight: 500; }
+  .stat-l { font-size: 12px; color: #888; margin-top: 2px; }
+  .card { background: #fff; border: 1px solid #e8e7e2; border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem; }
+  .question { font-size: 18px; font-weight: 500; line-height: 1.4; margin-bottom: 1.25rem; }
+  .swatch-row { display: flex; gap: 10px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .swatch { width: 64px; height: 64px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; transition: transform .1s, border-color .1s; }
+  .swatch:hover { transform: scale(1.08); }
+  .swatch.correct-swatch { border-color: #3b6d11 !important; }
+  .swatch.wrong-swatch { border-color: #a32d2d !important; }
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 480px) { .choices { grid-template-columns: 1fr; } }
+  .choice { padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; cursor: pointer; background: #fff; color: #1a1a18; text-align: left; line-height: 1.4; transition: all .1s; }
+  .choice:hover:not(:disabled) { border-color: #888; background: #f5f4f0; }
+  .choice.correct { background: #eaf3de; border-color: #639922; color: #27500a; }
+  .choice.wrong { background: #fcebeb; border-color: #e24b4a; color: #791f1f; }
+  .choice:disabled { cursor: default; }
+  .feedback { padding: 12px 14px; border-radius: 8px; font-size: 14px; margin-top: 1rem; line-height: 1.5; display: none; }
+  .feedback.correct { background: #eaf3de; color: #27500a; }
+  .feedback.wrong { background: #fcebeb; color: #791f1f; }
+  .next-btn { display: none; margin-top: 1rem; padding: 11px 20px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; background: #1a1a18; color: #fff; width: 100%; font-weight: 500; }
+  .next-btn:hover { opacity: .85; }
+  .streak-row { display: flex; gap: 5px; margin-bottom: 1rem; align-items: center; }
+  .streak-dot { width: 8px; height: 8px; border-radius: 50%; background: #e0dfd8; transition: background .2s; }
+  .streak-dot.lit { background: #3b6d11; }
+  .complete-card { background: #fff; border: 1px solid #e8e7e2; border-radius: 14px; padding: 2rem; text-align: center; display: none; }
+  .complete-card h2 { font-size: 20px; font-weight: 500; margin-bottom: .5rem; }
+  .complete-card p { color: #555; font-size: 15px; margin-bottom: 1.5rem; line-height: 1.6; }
+  .restart-btn { padding: 10px 24px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; cursor: pointer; background: #fff; color: #1a1a18; }
+  .restart-btn:hover { border-color: #888; background: #f5f4f0; }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>Art theory drill</h1>
+  <p class="subtitle">Build from foundations to mastery</p>
+  <div class="module-tabs">
+    <button class="tab active" onclick="switchMod('color',event)">Color theory</button>
+    <button class="tab" onclick="switchMod('vocab',event)">Art vocabulary</button>
+  </div>
+  <div class="progress-section">
+    <div class="tier-row">
+      <span class="tier-badge t1" id="tier-badge">Tier 1 — foundations</span>
+      <div class="xp-wrap"><div class="xp-fill" id="xp-bar" style="width:0%"></div></div>
+      <span class="xp-label" id="xp-label">0 / 10 xp</span>
+    </div>
+    <div class="streak-row" id="streak-row"></div>
+  </div>
+  <div class="stats-row">
+    <div class="stat"><div class="stat-n" id="score-disp">0</div><div class="stat-l">score</div></div>
+    <div class="stat"><div class="stat-n" id="streak-disp">0</div><div class="stat-l">streak</div></div>
+    <div class="stat"><div class="stat-n" id="acc-disp">—</div><div class="stat-l">accuracy</div></div>
+  </div>
+  <div class="card" id="q-card">
+    <div class="question" id="q-text"></div>
+    <div id="q-visual"></div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="next-btn" onclick="nextQ()">Next question →</button>
+  </div>
+  <div class="complete-card" id="complete-card">
+    <h2 id="complete-title">Module complete!</h2>
+    <p id="complete-msg"></p>
+    <button class="restart-btn" onclick="restartMod()">Start over</button>
+  </div>
+</div>
+<script>
+const MODS = {
+  color: {
+    tiers: [
+      { label: 'Tier 1 — foundations', xp: 10, cls: 't1' },
+      { label: 'Tier 2 — relationships', xp: 20, cls: 't2' },
+      { label: 'Tier 3 — harmony & mixing', xp: 35, cls: 't3' },
+      { label: 'Tier 4 — mastery', xp: 50, cls: 't4' }
+    ],
+    questions: [
+      { tier:1, type:'choice', q:'Which of these is a primary color?', choices:['Orange','Green','Blue','Purple'], answer:2, explain:'The three primary colors are red, yellow, and blue. They cannot be created by mixing other colors.' },
+      { tier:1, type:'choice', q:'What do you get when you mix red and yellow?', choices:['Purple','Orange','Green','Brown'], answer:1, explain:'Red + yellow = orange — a secondary color made by mixing two primaries.' },
+      { tier:1, type:'choice', q:'How many primary colors are there in traditional RYB color theory?', choices:['2','3','4','6'], answer:1, explain:'Red, yellow, and blue are the three primary colors in RYB (subtractive) color theory.' },
+      { tier:1, type:'choice', q:'A color made by mixing two primary colors is called a:', choices:['Tertiary color','Neutral color','Secondary color','Complementary color'], answer:2, explain:'Secondary colors — orange, green, violet — are each made by combining two primaries.' },
+      { tier:1, type:'swatch', q:'Which swatch is a warm color?', swatches:['#3A7BD5','#E8632A','#7CB9A8','#9B7FD4'], answer:1, explain:'Warm colors include reds, oranges, and yellows. They tend to feel energetic and visually advance toward the viewer.' },
+      { tier:1, type:'choice', q:'What is a "hue"?', choices:['How light or dark a color is','The pure color itself','How vivid or dull a color is','A mix of two colors'], answer:1, explain:'Hue is the pure color — the "what color is it" quality, independent of lightness or saturation.' },
+      { tier:1, type:'swatch', q:'Which swatch is a cool color?', swatches:['#D9534F','#E8A838','#4A90D9','#C97B3A'], answer:2, explain:'Cool colors are blues, greens, and violets. They tend to visually recede and feel calm.' },
+      { tier:1, type:'choice', q:'What do you get when you mix blue and yellow?', choices:['Orange','Purple','Green','Brown'], answer:2, explain:'Blue + yellow = green, another secondary color.' },
+      { tier:1, type:'choice', q:'Which color is NOT a secondary color?', choices:['Orange','Green','Violet','Red'], answer:3, explain:'Red is a primary color. Secondary colors are orange, green, and violet — each made from two primaries.' },
+      { tier:1, type:'choice', q:'Warm colors tend to do what visually?', choices:['Recede into the background','Advance toward the viewer','Appear neutral','Create calm moods'], answer:1, explain:'Warm colors (red, orange, yellow) appear to advance — they seem closer to the viewer, creating energy and excitement.' },
+      { tier:2, type:'choice', q:'Colors directly opposite each other on the color wheel are called:', choices:['Analogous','Complementary','Triadic','Split-complementary'], answer:1, explain:'Complementary colors sit opposite on the wheel (e.g. red/green, blue/orange). They create the highest possible contrast.' },
+      { tier:2, type:'choice', q:'What is an analogous color scheme?', choices:['Three evenly spaced colors','Colors adjacent to each other on the wheel','A single color in different tints','Opposite colors on the wheel'], answer:1, explain:'Analogous colors sit next to each other on the wheel (e.g. yellow, yellow-green, green). They create natural harmony.' },
+      { tier:2, type:'choice', q:'What is "value" in color theory?', choices:['How pure the hue is','The lightness or darkness of a color','The warmth or coolness of a color','The name of the color'], answer:1, explain:'Value describes how light or dark a color is. Adding white raises value (tint); adding black lowers it (shade).' },
+      { tier:2, type:'choice', q:'Adding white to a pure hue creates a:', choices:['Shade','Tone','Tint','Chroma'], answer:2, explain:'A tint is a hue mixed with white, making it lighter. Pink is a tint of red. A shade is a hue mixed with black.' },
+      { tier:2, type:'choice', q:'"Saturation" refers to:', choices:['Lightness or darkness','Warmth or coolness','Vividness or dullness of a color','Number of colors used'], answer:2, explain:'Saturation (also called chroma) measures how vivid vs. dull a color is.' },
+      { tier:2, type:'choice', q:'A triadic color scheme uses:', choices:['Two colors plus white','Three evenly spaced colors on the wheel','Only opposite colors','One color at different saturations'], answer:1, explain:'Triadic schemes use three colors 120 degrees apart on the wheel — like red, yellow, and blue.' },
+      { tier:2, type:'choice', q:'What is a "shade" of a color?', choices:['A hue mixed with white','A hue mixed with gray','A hue mixed with black','A hue mixed with another hue'], answer:2, explain:'A shade is a hue mixed with black, making it darker. Navy is a shade of blue.' },
+      { tier:2, type:'swatch', q:'Which swatch appears most desaturated?', swatches:['#E84040','#C47A7A','#8F5555','#4A2828'], answer:1, explain:'The pinkish-grayish red is most desaturated — dulled toward gray. Deep dark reds can still carry strong saturation.' },
+      { tier:2, type:'choice', q:'Simultaneous contrast describes:', choices:['Mixing two colors at once','How adjacent colors affect each other\'s perceived appearance','Contrast between light and dark shapes','The effect of color temperature'], answer:1, explain:'Simultaneous contrast: adjacent colors mutually influence each other\'s appearance. A gray next to red looks slightly greenish.' },
+      { tier:2, type:'choice', q:'Using a base color plus the two colors flanking its complement is called:', choices:['Triadic','Analogous','Split-complementary','Tetradic'], answer:2, explain:'Split-complementary uses a base color and the two colors flanking its direct complement — softer contrast than full complementary.' },
+      { tier:3, type:'choice', q:'What is "local color"?', choices:['A color unique to one region','The actual color of an object under neutral light','A warm underpainting color','The color of shadows'], answer:1, explain:'Local color is the true, inherent color of an object seen in neutral light, before reflected light or shadow influences it.' },
+      { tier:3, type:'choice', q:'Adding gray to a hue produces a:', choices:['Tint','Shade','Tone','Complement'], answer:2, explain:'Adding gray to a hue produces a tone — a more muted, earthy version. Tones are often more sophisticated than pure hues.' },
+      { tier:3, type:'choice', q:'What is "optical mixing"?', choices:['Mixing paints on a palette','Placing small dots of pure color that blend in the viewer\'s eye','Using a computer to mix colors','Mixing complementaries to get gray'], answer:1, explain:'Optical mixing (used by Pointillists like Seurat) places unmixed pure color dots so close together the eye blends them at distance.' },
+      { tier:3, type:'choice', q:'Complementary colors mixed together produce:', choices:['A brighter color','A neutral gray or brown','White','A secondary color'], answer:1, explain:'Mixing complementary colors neutralizes their chromatic intensity, producing a gray or muted brown.' },
+      { tier:3, type:'choice', q:'What does "color temperature" describe?', choices:['The literal warmth of colored lights','Whether a hue reads as warm or cool','How vivid a color is','The brightness of a color'], answer:1, explain:'Color temperature is perceptual — warm colors (reds, oranges, yellows) vs. cool (blues, greens, violets).' },
+      { tier:3, type:'choice', q:'Applying thin transparent paint layers over dry paint to build luminous color is called:', choices:['Impasto','Scumbling','Glazing','Alla prima'], answer:2, explain:'Glazing applies thin, transparent layers over dry paint. Each layer enriches color depth without mixing — used extensively by Old Masters.' },
+      { tier:3, type:'choice', q:'A monochromatic color scheme uses:', choices:['Only black and white','One hue in various tints, tones, and shades','Multiple warm colors','Colors adjacent on the wheel'], answer:1, explain:'Monochromatic schemes use a single hue, exploring its full range from tints through tones to shades.' },
+      { tier:3, type:'choice', q:'Color harmony is primarily achieved through:', choices:['Using only primary colors','Consistent relationships between hues, values, and saturation','Using only one color','Avoiding warm colors'], answer:1, explain:'Harmony comes from intentional consistent relationships — balancing warm/cool, saturated/muted, and light/dark across the composition.' },
+      { tier:4, type:'choice', q:'Itten\'s color theory argued that:', choices:['All colors have equal visual weight','Subjective color perception varies between individuals','Primary colors cannot be mixed','Cool colors always recede'], answer:1, explain:'Johannes Itten (Bauhaus) argued color perception is partly subjective — different viewers respond differently to the same colors based on personality.' },
+      { tier:4, type:'choice', q:'What did Josef Albers explore in "Interaction of Color"?', choices:['How pigments chemically interact','How color relativity makes the same color appear different depending on context','The history of color naming','How to mix perfect neutrals'], answer:1, explain:'Albers showed that our perception of a color changes completely based on what surrounds it — the same gray looks radically different on black vs. white.' },
+      { tier:4, type:'choice', q:'Simultaneous contrast was extensively studied by:', choices:['Paul Cézanne','Michel Eugène Chevreul','Vincent van Gogh','Henri Matisse'], answer:1, explain:'Chevreul, a French chemist working with tapestry dyes in the 1800s, formulated the law of simultaneous contrast that influenced Impressionism.' },
+      { tier:4, type:'choice', q:'In subtractive color mixing, mixing all primaries theoretically produces:', choices:['White','A bright secondary','Black or very dark brown','A neutral gray'], answer:2, explain:'Subtractive mixing (pigments absorb light wavelengths). In theory all primaries mix to black — in practice with impure pigments, dark muddy brown.' },
+      { tier:4, type:'choice', q:'Additive color mixing (light) combines red, green, and blue to produce:', choices:['Black','Brown','White','Yellow'], answer:2, explain:'Additive mixing adds light wavelengths. Red + green + blue light = white. This is how screens work — RGB.' },
+      { tier:4, type:'choice', q:'The Munsell color system classifies colors using:', choices:['Hue, saturation, temperature','Hue, value, and chroma','Primary, secondary, tertiary','Warm, cool, and neutral'], answer:1, explain:'Munsell\'s system uses three independent dimensions: hue (color family), value (lightness), and chroma (saturation). Still used professionally.' },
+      { tier:4, type:'choice', q:'An afterimage occurs because:', choices:['The brain remembers colors','Retinal cells fatigue and the complement appears briefly when you look away','Color bleeds on the retina','The eye adjusts white balance'], answer:1, explain:'After staring at red, red-sensitive cells tire and blue-green receptors dominate — you briefly see the complement (cyan). This confirms complementary color relationships are physiological.' }
+    ]
+  },
+  vocab: {
+    tiers: [
+      { label: 'Tier 1 — basic terms', xp: 10, cls: 't1' },
+      { label: 'Tier 2 — technique', xp: 20, cls: 't2' },
+      { label: 'Tier 3 — light & shadow', xp: 35, cls: 't3' },
+      { label: 'Tier 4 — advanced', xp: 50, cls: 't4' }
+    ],
+    questions: [
+      { tier:1, type:'choice', q:'What is "composition" in visual art?', choices:['The colors used','The arrangement of visual elements within the picture frame','The materials an artwork is made from','The size of the artwork'], answer:1, explain:'Composition is how the artist arranges elements — shapes, lines, color, space — within the picture plane to guide the viewer\'s eye.' },
+      { tier:1, type:'choice', q:'"Negative space" refers to:', choices:['Dark areas of a painting','The background or empty space around the subject','Areas with no color','Spaces between brush strokes'], answer:1, explain:'Negative space is the area around and between subjects. Skilled artists shape negative space as deliberately as positive forms.' },
+      { tier:1, type:'choice', q:'What is "perspective" in visual art?', choices:['How bright the colors are','A technique for representing 3D space on a 2D surface','The style of brushwork','The choice of subject matter'], answer:1, explain:'Perspective is a system for depicting three-dimensional space and depth on a flat surface, creating the illusion of distance.' },
+      { tier:1, type:'choice', q:'What is a "focal point"?', choices:['The center of the canvas','The area that first attracts the viewer\'s eye','The lightest part','The most detailed section'], answer:1, explain:'A focal point is the visual anchor — the area the composition guides the viewer\'s eye to first, usually through contrast or placement.' },
+      { tier:1, type:'choice', q:'"Line weight" refers to:', choices:['The physical weight of a pencil','The thickness or thinness of a drawn line','How many lines are in a drawing','The direction a line travels'], answer:1, explain:'Line weight is the varying thickness of lines. Varied line weight adds energy, depth, and hierarchy to a drawing.' },
+      { tier:1, type:'choice', q:'What is "texture" in art?', choices:['Only the physical surface quality','The visual or tactile surface quality, real or implied','The pattern of colors','The roughness of canvas'], answer:1, explain:'Texture can be actual (real surface) or implied (visual marks suggesting a surface). Both are tools for creating realism and depth.' },
+      { tier:1, type:'choice', q:'"Scale" in art refers to:', choices:['Musical notation','The relative size of objects in relation to each other or to the viewer','How balanced a composition is','The medium used'], answer:1, explain:'Scale describes the size relationships between objects. Manipulating scale creates depth, emphasis, and dramatic or surreal impact.' },
+      { tier:1, type:'choice', q:'What is "proportion" in art?', choices:['The colors used','The ratio of sizes between parts of a composition or figure','The amount of detail','The style of an artwork'], answer:1, explain:'Proportion is the size relationship between parts of a composition or figure. Classical ideals of proportion have guided artists for millennia.' },
+      { tier:1, type:'choice', q:'A "vanishing point" is:', choices:['Where colors meet in a painting','The point on the horizon where parallel lines appear to converge','A blending technique','The edge of the canvas'], answer:1, explain:'In perspective drawing, a vanishing point is where parallel lines seem to meet on the horizon — the foundation of linear perspective.' },
+      { tier:1, type:'choice', q:'"Rhythm" in a visual composition means:', choices:['Musical tempo applied to art','A sense of movement created by repeating visual elements','Lines that curve like waves','Random placement of shapes'], answer:1, explain:'Visual rhythm is created by repeating shapes, colors, lines, or patterns — it guides the eye and creates energy.' },
+      { tier:2, type:'choice', q:'What is "impasto"?', choices:['A style of figure drawing','Thick, textured application of paint that stands off the surface','A technique for painting glass','Thin translucent layers'], answer:1, explain:'Impasto is painting with thick, heavily textured paint — often applied with a palette knife. Van Gogh is a master of impasto.' },
+      { tier:2, type:'choice', q:'"Sfumato" is a technique where:', choices:['Paint is applied very thickly','Edges and tones are blended so gradually that contours seem to melt','Colors are applied in bold stripes','Forms are outlined in black'], answer:1, explain:'Sfumato (Italian for "smoky") creates seamless transitions with no hard edges. Leonardo da Vinci developed it — the Mona Lisa\'s face is the canonical example.' },
+      { tier:2, type:'choice', q:'What does "alla prima" mean?', choices:['A style using many thin glazes','Completing a painting in one wet session without waiting for layers to dry','Painting only from life','Using only primary colors'], answer:1, explain:'Alla prima ("at first attempt") means completing a painting in a single wet session, also called "wet-on-wet." Common in Impressionism.' },
+      { tier:2, type:'choice', q:'What is "chiaroscuro"?', choices:['A style of bright flat color','The use of strong contrasts between light and dark to create volume','Painting only in grays','A perspective technique'], answer:1, explain:'Chiaroscuro (Italian for "light-dark") uses strong light/shadow contrast to create three-dimensional form. Rembrandt and Caravaggio are its masters.' },
+      { tier:2, type:'choice', q:'What is "foreshortening"?', choices:['Making objects appear smaller to show distance','Depicting a form at an angle toward the viewer, appearing compressed','Shortening figure proportions','Drawing from memory'], answer:1, explain:'Foreshortening depicts a limb or object pointing toward the viewer — it appears shorter than it actually is, creating a dramatic depth illusion.' },
+      { tier:2, type:'choice', q:'"Scumbling" means:', choices:['Scraping paint off with a knife','Brushing thin opaque paint loosely over a dry darker layer','A technique for painting water','Applying color with fingers'], answer:1, explain:'Scumbling drags a dry, sparse load of lighter paint over a darker dry layer, letting the undercolor show through in a broken, textural way.' },
+      { tier:2, type:'choice', q:'What is "hatching"?', choices:['Creating texture with dots','Drawing parallel lines to create tone or texture','Applying paint in layers','A technique for drawing animals'], answer:1, explain:'Hatching uses parallel lines to suggest tone or texture. Cross-hatching layers lines at angles to each other for deeper shadow.' },
+      { tier:2, type:'choice', q:'"Contour drawing" focuses on:', choices:['Shadow shapes of an object','The outline and edges of a form','Interior details only','Gesture and movement'], answer:1, explain:'Contour drawing traces the outer edges and interior contours of a form with a single continuous line, training precise observation of edges.' },
+      { tier:2, type:'choice', q:'What is "gestural drawing"?', choices:['Drawing precise measured outlines','Rapid drawing that captures movement, energy, and essential form','Drawing with the non-dominant hand','Only drawing hands'], answer:1, explain:'Gestural drawing uses quick, flowing marks to capture the essential energy, action, and proportion of a subject — not details, but life.' },
+      { tier:2, type:'choice', q:'What does "medium" refer to in art?', choices:['A medium-sized canvas','The material or technique the artist uses','The middle ground of a painting','A type of color mixing'], answer:1, explain:'Medium refers to the material an artist works with — oil, watercolor, graphite, charcoal, acrylic — and the techniques specific to that material.' },
+      { tier:3, type:'choice', q:'What is the "core shadow"?', choices:['The darkest shadow cast onto a surface by an object','The darkest area on the object itself, at the edge of the light','The shadow under the chin','A shadow inside a hollow'], answer:1, explain:'The core shadow is the darkest band on the form itself — found at the transition zone away from the light, before reflected light bounces back.' },
+      { tier:3, type:'choice', q:'What is "reflected light"?', choices:['Light that bounces off mirrors','Light reflecting off nearby surfaces back onto the shadow side of a form','The lightest highlight','Light from artificial sources'], answer:1, explain:'Reflected light is secondary, bounced light illuminating the shadow side of a form. It is subtle — never as bright as the lit side. Painting it too bright is a common beginner mistake.' },
+      { tier:3, type:'choice', q:'What is a "cast shadow"?', choices:['The shadow on the object itself','The shadow projected onto surrounding surfaces by an object blocking the light','A shadow made with charcoal','A theater lighting term'], answer:1, explain:'A cast shadow is thrown onto external surfaces by an object blocking the light. Edges are typically harder near the object and softer further away.' },
+      { tier:3, type:'choice', q:'The lightest point on a shiny surface is called the:', choices:['Core shadow','Reflected light','Highlight','Halftone'], answer:2, explain:'The highlight is the specular reflection of the light source — the brightest point on a glossy surface, appearing as a hot spot of near-white.' },
+      { tier:3, type:'choice', q:'"Halftone" in painting refers to:', choices:['A gray color','The mid-value transition zone between the highlight and core shadow','A printing technique','A type of photograph'], answer:1, explain:'Halftones are the transitional mid-values between highlight and shadow — they describe the gradual turning of the form away from the light source.' },
+      { tier:3, type:'choice', q:'What is "tenebrism"?', choices:['An extreme chiaroscuro with dramatic dark backgrounds and isolated light','A technique for painting landscapes','Using very small brushstrokes','Painting with black and white only'], answer:0, explain:'Tenebrism (from Italian "tenebroso" — gloomy) uses extreme darkness: figures emerge dramatically from near-total shadow. Caravaggio is its key practitioner.' },
+      { tier:3, type:'choice', q:'In a value study, how many values are typically used to simplify a subject?', choices:['2','3 to 5','10 to 15','As many as possible'], answer:1, explain:'Simplifying to 3-5 values forces clear structural decision-making. It trains you to see light as form before adding complexity.' },
+      { tier:3, type:'choice', q:'What is the "terminator" on a form?', choices:['The darkest shadow area','The edge where light transitions to shadow on a three-dimensional form','The outline of an object','The cast shadow edge'], answer:1, explain:'The terminator is the dividing line where light transitions to shadow on a form. Its quality — hard or soft — depends on the nature of the light source.' },
+      { tier:4, type:'choice', q:'What is "pentimento"?', choices:['An Italian musical term','Earlier painting layers showing through as upper paint becomes transparent with age','A gold leaf technique','A type of fresco'], answer:1, explain:'Pentimento (Italian for "repentance") refers to underlying images reappearing through paint as it ages and becomes more transparent — revealing the artist\'s revisions.' },
+      { tier:4, type:'choice', q:'"Grisaille" is a technique where:', choices:['Paint is applied in horizontal bands','The entire work is painted in grays and neutrals to establish value before adding color','All colors are mixed with white','Painting is done on gray-toned paper'], answer:1, explain:'Grisaille is painting entirely in neutrals/grays to solve the value structure first. Color glazes are then applied over it.' },
+      { tier:4, type:'choice', q:'What is "underpainting"?', choices:['Paint on the back of a canvas','An initial monochrome layer establishing composition and values before color work','A painting hidden beneath another','A protective top layer'], answer:1, explain:'Underpainting establishes composition and tonal structure in a neutral color before full color work is built on top. Common approaches include grisaille and imprimatura.' },
+      { tier:4, type:'choice', q:'"Pointillism" is associated with which artist?', choices:['Claude Monet','Georges Seurat','Paul Gauguin','Paul Cézanne'], answer:1, explain:'Georges Seurat developed Pointillism — composing paintings from small dots of pure color that optically mix in the viewer\'s eye. "A Sunday on La Grande Jatte" is its masterpiece.' },
+      { tier:4, type:'choice', q:'"Trompe l\'oeil" means:', choices:['Painting outdoors','Deceiving the eye — illusionistic painting that appears to be real objects','A French compositional style','Painting with only three colors'], answer:1, explain:'Trompe l\'oeil (French: "deceive the eye") is hyperrealistic painting meant to make viewers believe they are seeing actual objects rather than painted representations.' },
+      { tier:4, type:'choice', q:'What is "encaustic" painting?', choices:['Painting on cave walls','Painting with pigments suspended in hot wax','Painting on metal surfaces','A technique using acid to etch surfaces'], answer:1, explain:'Encaustic painting uses pigments mixed into heated beeswax, applied while molten and fused with heat. One of the oldest painting media — used in ancient Egypt and Greece.' },
+      { tier:4, type:'choice', q:'What was Cézanne\'s primary revolutionary contribution?', choices:['Perfecting Renaissance perspective','Analyzing forms as cylinders, spheres, and cones rather than rendering them naturalistically','Developing chiaroscuro to its extreme','Creating the first abstract paintings'], answer:1, explain:'Cézanne broke from naturalistic representation to analyze the underlying geometric structure of forms — directly influencing Cubism and all of modern art.' }
+    ]
+  }
+};
+
+let state = { mod:'color', tierIdx:0, xp:0, score:0, streak:0, totalQ:0, totalCorrect:0, answered:false, queue:[], current:null };
+
+function switchMod(mod, evt) {
+  state = { mod, tierIdx:0, xp:0, score:0, streak:0, totalQ:0, totalCorrect:0, answered:false, queue:[], current:null };
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  evt.target.classList.add('active');
+  document.getElementById('complete-card').style.display = 'none';
+  document.getElementById('q-card').style.display = 'block';
+  updateUI(); buildQueue(); nextQ();
+}
+
+function buildQueue() {
+  const tier = state.tierIdx + 1;
+  let pool = MODS[state.mod].questions.filter(q => q.tier === tier);
+  pool = shuffle(pool);
+  state.queue = pool;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i+1)); [a[i],a[j]] = [a[j],a[i]]; }
+  return a;
+}
+
+function nextQ() {
+  if (state.queue.length === 0) buildQueue();
+  state.current = state.queue.pop();
+  state.answered = false;
+  renderQ();
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('feedback').style.display = 'none';
+}
+
+function renderQ() {
+  const q = state.current;
+  if (!q) { buildQueue(); nextQ(); return; }
+  document.getElementById('q-text').textContent = q.q;
+  const visual = document.getElementById('q-visual');
+  const choices = document.getElementById('choices');
+  visual.innerHTML = ''; choices.innerHTML = '';
+  if (q.type === 'swatch') {
+    const row = document.createElement('div');
+    row.className = 'swatch-row';
+    q.swatches.forEach((hex, i) => {
+      const s = document.createElement('button');
+      s.className = 'swatch'; s.style.background = hex;
+      s.setAttribute('aria-label', 'Color option ' + (i+1));
+      s.onclick = () => handleSwatchAnswer(i, q);
+      row.appendChild(s);
+    });
+    visual.appendChild(row);
+  } else {
+    q.choices.forEach((c, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice'; btn.textContent = c;
+      btn.onclick = () => handleChoiceAnswer(i, q);
+      choices.appendChild(btn);
+    });
+  }
+}
+
+function handleChoiceAnswer(idx, q) {
+  if (state.answered) return;
+  state.answered = true; state.totalQ++;
+  const btns = document.querySelectorAll('.choice');
+  const correct = idx === q.answer;
+  btns.forEach((b, i) => { b.disabled = true; if (i === q.answer) b.classList.add('correct'); else if (i === idx && !correct) b.classList.add('wrong'); });
+  processResult(correct, q);
+}
+
+function handleSwatchAnswer(idx, q) {
+  if (state.answered) return;
+  state.answered = true; state.totalQ++;
+  const swatches = document.querySelectorAll('.swatch');
+  const correct = idx === q.answer;
+  swatches.forEach((s, i) => { if (i === q.answer) s.classList.add('correct-swatch'); else if (i === idx && !correct) s.classList.add('wrong-swatch'); });
+  processResult(correct, q);
+}
+
+function processResult(correct, q) {
+  if (correct) {
+    state.score += 10; state.streak++; state.totalCorrect++; state.xp++;
+    const tier = MODS[state.mod].tiers[state.tierIdx];
+    if (state.xp >= tier.xp) {
+      if (state.tierIdx < MODS[state.mod].tiers.length - 1) { state.tierIdx++; state.xp = 0; buildQueue(); }
+      else { updateUI(); setTimeout(showComplete, 400); return; }
+    }
+  } else { state.streak = 0; }
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback ' + (correct ? 'correct' : 'wrong');
+  fb.textContent = (correct ? 'Correct. ' : 'Not quite. ') + q.explain;
+  fb.style.display = 'block';
+  document.getElementById('next-btn').style.display = 'block';
+  updateUI();
+}
+
+function showComplete() {
+  document.getElementById('q-card').style.display = 'none';
+  document.getElementById('complete-card').style.display = 'block';
+  const acc = state.totalQ > 0 ? Math.round((state.totalCorrect / state.totalQ) * 100) : 0;
+  document.getElementById('complete-msg').textContent = 'You finished all four tiers. Final score: ' + state.score + ' with ' + acc + '% accuracy.';
+}
+
+function restartMod() {
+  state.tierIdx = 0; state.xp = 0; state.score = 0; state.streak = 0;
+  state.totalQ = 0; state.totalCorrect = 0; state.answered = false; state.queue = [];
+  document.getElementById('complete-card').style.display = 'none';
+  document.getElementById('q-card').style.display = 'block';
+  updateUI(); buildQueue(); nextQ();
+}
+
+function updateUI() {
+  const tier = MODS[state.mod].tiers[state.tierIdx];
+  const badge = document.getElementById('tier-badge');
+  badge.textContent = tier.label; badge.className = 'tier-badge ' + tier.cls;
+  const pct = Math.round((state.xp / tier.xp) * 100);
+  document.getElementById('xp-bar').style.width = pct + '%';
+  document.getElementById('xp-label').textContent = state.xp + ' / ' + tier.xp + ' xp';
+  document.getElementById('score-disp').textContent = state.score;
+  document.getElementById('streak-disp').textContent = state.streak;
+  document.getElementById('acc-disp').textContent = state.totalQ > 0 ? Math.round((state.totalCorrect / state.totalQ) * 100) + '%' : '—';
+  const streakRow = document.getElementById('streak-row');
+  streakRow.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const d = document.createElement('div');
+    d.className = 'streak-dot' + (i < state.streak ? ' lit' : '');
+    streakRow.appendChild(d);
+  }
+}
+
+buildQueue(); nextQ();
+</script>
+</body>
+</html>
